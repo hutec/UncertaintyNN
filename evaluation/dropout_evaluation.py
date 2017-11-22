@@ -5,13 +5,18 @@ import tensorflow as tf
 import numpy as np
 
 import matplotlib
-matplotlib.use("Agg")
+# matplotlib.use("Agg")
 
+import datetime
+import os
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import seaborn as sns
+import imageio
 
 
-def dropout_evaluation(x, y, pred_range, n_passes=50, dropout_rate=0.3, learning_rate=0.001, epochs=20000, display_step=2000):
+def dropout_evaluation(x, y, pred_range, n_passes=50, dropout_rate=0.3, learning_rate=0.001, epochs=20000, display_step=2000,
+                       save_animation=False):
 
     """
     Generic dropout model evaluation
@@ -40,63 +45,86 @@ def dropout_evaluation(x, y, pred_range, n_passes=50, dropout_rate=0.3, learning
     sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
     sess.run(init)
 
-    for epoch in range(epochs):
+    if save_animation:
+        ts = str(datetime.datetime.utcnow())
+        os.mkdir(ts)
+        filenames = []
+
+    def plotting():
+        pred_x = pred_range
+        pred_x_multipass = np.array([[e] * n_passes for e in pred_x]).flatten()
+        pred_x_multipass = pred_x_multipass.reshape([-1, 1])
+
+        pred_y_multipass = sess.run(predictions, feed_dict={x_data: pred_x_multipass})
+        pred_y_multipass = pred_y_multipass.reshape(-1, n_passes)
+        pred_y_mean = pred_y_multipass.mean(axis=1)
+        pred_y_var = pred_y_multipass.var(axis=1)
+        pred_y_std = pred_y_multipass.std(axis=1)
+
+        fig, ax = plt.subplots(1, 1, sharey=True, figsize=(20, 20))
+        ax.set_xlim(np.min(x) * 1.2, np.max(x) * 1.2)
+        ax.set_ylim(np.min(y) * 1.2, np.max(y) * 1.2)
+
+        ax.scatter(x, y, label="training samples", alpha=0.3)
+        ax.plot(pred_x, pred_y_mean, color="red", label="prediction")
+        ax.fill_between(pred_x, pred_y_mean - pred_y_var, pred_y_mean + pred_y_var, alpha=0.5)
+        ax.fill_between(pred_x, 0, pred_y_var, alpha=0.5, label="variance")
+        ax.legend()
+
+        ax.set_title("Dropout-Model | Dropout: {}, Passes: {}, Epochs: {}, Learning Rate: {}".format(
+            dropout_rate, n_passes, epoch, learning_rate
+        ))
+
+        if save_animation:
+            filename = ts + "/" + str(epoch) + ".png"
+            fig.savefig(filename)
+            filenames.append(filename)
+
+    for epoch in range(epochs+1):
         sess.run(train, feed_dict={x_data: x,
                                    y_data: y})
-
         if epoch % display_step == 0:
             print("Epoch {}".format(epoch))
             cur_loss = sess.run(loss, feed_dict={x_data: x,
                                                  y_data: y})
             print("Loss: {}".format(cur_loss))
+
+            if save_animation:
+                plotting()
     print("Training done.")
 
-    pred_x = pred_range
-    pred_x_multipass = np.array([[e] * n_passes for e in pred_x]).flatten()
-    pred_x_multipass = pred_x_multipass.reshape([-1, 1])
-
-    pred_y_multipass = sess.run(predictions, feed_dict={x_data: pred_x_multipass})
-    pred_y_multipass = pred_y_multipass.reshape(-1, n_passes)
-    pred_y_mean = pred_y_multipass.mean(axis=1)
-    pred_y_var = pred_y_multipass.var(axis=1)
-    pred_y_std = pred_y_multipass.std(axis=1)
-
-    fig, ax = plt.subplots(1, 1, sharey=True, figsize=(20, 20))
-    ax.scatter(x, y, label="training samples", alpha=0.3)
-    ax.plot(pred_x, pred_y_mean, color="red", label="prediction")
-    ax.fill_between(pred_x, pred_y_mean - pred_y_var, pred_y_mean + pred_y_var, alpha=0.5)
-    ax.fill_between(pred_x, 0, pred_y_var, alpha=0.5, label="variance")
-    ax.legend()
-
-    ax.set_title("Dropout-Model | Dropout: {}, Passes: {}, Epochs: {}, Learning Rate: {}".format(
-        dropout_rate, n_passes, epochs, learning_rate
-    ))
-    plt.show()
-
-    return fig
+    if save_animation:
+        print("Writing gif")
+        with imageio.get_writer(ts + "/animation.gif", mode="I", duration=len(filenames) * 0.2) as writer:
+            for filename in filenames:
+                image = imageio.imread(filename)
+                writer.append_data(image)
+    else:
+        plotting()
+        plt.show()
 
 
-def dropout_osband_sin_evaluation(n_samples=50, n_passes=50, dropout_rate=0.4, learning_rate=0.001, epochs=20000,
-                                  display_step=2000):
+def dropout_osband_sin_evaluation(n_samples=50, n_passes=50, dropout_rate=0.3, learning_rate=0.001, epochs=20000,
+                                  display_step=2000, save_animation=False):
     x, y = sample_generators.generate_osband_sin_samples(size=n_samples)
     pred_range = np.arange(-0.2, 1.2, 0.01)
-    fig = dropout_evaluation(x, y, pred_range, n_passes, dropout_rate, learning_rate, epochs, display_step)
+    dropout_evaluation(x, y, pred_range, n_passes, dropout_rate, learning_rate, epochs, display_step, save_animation)
 
-    fig.savefig("results/dropout_sinus_passes{}_dropout{}_samples{}_epochs{}_lr{}.pdf".format(
-        n_passes, dropout_rate, n_samples, epochs, learning_rate
-    ))
+    # fig.savefig("results/dropout_sinus_passes{}_dropout{}_samples{}_epochs{}_lr{}.pdf".format(
+    #     n_passes, dropout_rate, n_samples, epochs, learning_rate
+    # ))
 
 
-def dropout_osband_nonlinear_evaluation(n_passes=50, dropout_rate=0.4, learning_rate=0.001, epochs=6000,
-                                        display_step=2000):
+def dropout_osband_nonlinear_evaluation(n_passes=50, dropout_rate=0.3, learning_rate=0.001, epochs=6000,
+                                        display_step=2000, save_animation=False):
     x, y = sample_generators.generate_osband_nonlinear_samples()
     pred_range = np.arange(-5, 5, 0.01)
-    fig = dropout_evaluation(x, y, pred_range, n_passes, dropout_rate, learning_rate, epochs, display_step)
+    fig = dropout_evaluation(x, y, pred_range, n_passes, dropout_rate, learning_rate, epochs, display_step, save_animation)
     fig.savefig("results/dropout_nonlinear_passes{}_dropout{}_epochs{}_lr{}.pdf".format(
         n_passes, dropout_rate, epochs, learning_rate
     ))
 
 
 if __name__ == "__main__":
-    dropout_osband_sin_evaluation()
-    dropout_osband_nonlinear_evaluation()
+    dropout_osband_sin_evaluation(epochs=70000, display_step=5000, save_animation=True)
+    # dropout_osband_nonlinear_evaluation()
