@@ -61,7 +61,7 @@ def dropout_evaluation(x, y, pred_range, n_passes=50, dropout_rate=0.3, learning
         pred_y_var = pred_y_multipass.var(axis=1)
         pred_y_std = pred_y_multipass.std(axis=1)
 
-        fig, ax = plt.subplots(1, 1, sharey=True, figsize=(20, 20))
+        fig, ax = plt.subplots(1, 1, sharey=True, figsize=(20, 10))
         ax.set_xlim(np.min(x) * 1.2, np.max(x) * 1.2)
         ax.set_ylim(np.min(y) * 1.2, np.max(y) * 1.2)
 
@@ -80,6 +80,8 @@ def dropout_evaluation(x, y, pred_range, n_passes=50, dropout_rate=0.3, learning
             fig.savefig(filename)
             filenames.append(filename)
 
+        return fig
+
     for epoch in range(epochs+1):
         sess.run(train, feed_dict={x_data: x,
                                    y_data: y})
@@ -91,6 +93,7 @@ def dropout_evaluation(x, y, pred_range, n_passes=50, dropout_rate=0.3, learning
 
             if save_animation:
                 plotting()
+
     print("Training done.")
 
     if save_animation:
@@ -99,20 +102,24 @@ def dropout_evaluation(x, y, pred_range, n_passes=50, dropout_rate=0.3, learning
             for filename in filenames:
                 image = imageio.imread(filename)
                 writer.append_data(image)
-    else:
-        plotting()
-        plt.show()
+
+    fig = plotting()
+    # plt.show()
+
+    sess.close()
+
+    return fig
 
 
 def dropout_osband_sin_evaluation(n_samples=50, n_passes=50, dropout_rate=0.3, learning_rate=0.001, epochs=20000,
                                   display_step=2000, save_animation=False):
     x, y = sample_generators.generate_osband_sin_samples(size=n_samples)
     pred_range = np.arange(-0.2, 1.2, 0.01)
-    dropout_evaluation(x, y, pred_range, n_passes, dropout_rate, learning_rate, epochs, display_step, save_animation)
+    fig = dropout_evaluation(x, y, pred_range, n_passes, dropout_rate, learning_rate, epochs, display_step, save_animation)
 
-    # fig.savefig("results/dropout_sinus_passes{}_dropout{}_samples{}_epochs{}_lr{}.pdf".format(
-    #     n_passes, dropout_rate, n_samples, epochs, learning_rate
-    # ))
+    fig.savefig("results/dropout_sinus_passes{}_dropout{}_samples{}_epochs{}_lr{}.pdf".format(
+        n_passes, dropout_rate, n_samples, epochs, learning_rate
+    ))
 
 
 def dropout_osband_nonlinear_evaluation(n_passes=50, dropout_rate=0.3, learning_rate=0.001, epochs=6000,
