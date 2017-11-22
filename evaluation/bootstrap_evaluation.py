@@ -6,6 +6,8 @@ import numpy as np
 from scipy.stats import bernoulli
 import numpy.ma as ma
 
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 

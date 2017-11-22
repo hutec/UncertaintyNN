@@ -3,12 +3,12 @@
 This project contains different implementation and evaluations of approaches to model
 uncertainty in neural networks.
 
-- Bootstrapping-Method from Osmand
+- Bootstrapping-Method from Osband
 - Dropout-Method by Gal
 - Combined method (heteroscedastic aleatoric + epistemic) from Kendal & Gal
 
 
-Those models are evaluated on 2D data proposed by Osmand. Specifically there is a dataset 
+Those models are evaluated on 2D data proposed by Osband. Specifically there is a dataset 
 having six points at (-1,1) , (-1,-1), (0,1), (0,-1), (1,1), (1,-1) which shows problems with
 the Dropout and Combined Method. And a ''x + sin(x)'' function with added noise.
 

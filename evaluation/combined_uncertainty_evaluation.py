@@ -4,6 +4,9 @@ from data import  sample_generators
 import tensorflow as tf
 import numpy as np
 
+import matplotlib
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -115,5 +118,5 @@ def combined_osband_nonlinear_evaluation(n_passes=50, dropout_rate=0.3, learning
 
 
 if __name__ == "__main__":
-    combined_osband_sin_evaluation(epochs=20000)
-    combined_osband_nonlinear_evaluation(epochs=10000)
+    combined_osband_sin_evaluation(epochs=100000)
+    #combined_osband_nonlinear_evaluation(epochs=10000)
