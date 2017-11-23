@@ -42,6 +42,7 @@ def mnist_dropout_evaluation(n_passes=50, dropout_rate=0.3, learning_rate=1e-4, 
 
     for epoch in range(epochs):
         batch = mnist.train.next_batch(50)
+
         sess.run(train_step, feed_dict={x_data: batch[0], y_data: batch[1], dropout_rate_data: 0.5})
 
         if epoch % display_step == 0:
@@ -49,10 +50,40 @@ def mnist_dropout_evaluation(n_passes=50, dropout_rate=0.3, learning_rate=1e-4, 
             # cur_loss = sess.run(loss, feed_dict={x_data: batch[0],
             #                                      y_data: batch[1]})
             train_accuracy = sess.run(accuracy, feed_dict={
-                x_data: batch[0], y_data: batch[1], dropout_rate_data:0})
-
+                x_data: batch[0], y_data: batch[1], dropout_rate_data:0}) # no dropout on single accuracy
             print("Accuracy: {}".format(train_accuracy))
 
 
+    # Running forwards passes
+    # MC Forward passes on test set
+
+    x_test = mnist.test.images
+    y_test = mnist.test.labels
+    
+    for i in xrange(10):
+        x_batch, y_batch = mnist.test.next_batch(100)
+        # Use tile instead of repeat, because np.repeat flattens results
+        x_batch_multipass = np.tile(x_batch, n_passes).reshape(-1, 784)
+
+
+        pred_y_multipass = sess.run(class_prob, feed_dict={
+            x_data: x_batch_multipass, dropout_rate_data: 0.5})
+
+        pred_y_multipass = pred_y_multipass.reshape(-1, n_passes, 10)
+        pred_y_mean = pred_y_multipass.mean(axis=1)
+
+        acc = sess.run(accuracy, feed_dict={
+            x_data: x_batch, y_data:y_batch, dropout_rate_data: 0.5})
+        print("Accurarcy {}".format(acc))
+
+
+    # pred_y_multipass = pred_y_multipass.reshape(-1, n_passes)
+
+    # print('test accuracy %g' % accuracy.eval(feed_dict={
+    #     x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))
+
+    # np.array([[e] * 10 for e in batch[0]]).reshape(-1, 500)
+
+
 if __name__ == "__main__":
-    mnist_dropout_evaluation()
+    mnist_dropout_evaluation(epochs=10000)

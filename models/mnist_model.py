@@ -43,3 +43,10 @@ def dropout_cnn_mnist_model(x, dropout_rate):
     class_prob = tf.nn.softmax(logits, name="softmax_tensor")
 
     return logits, class_prob
+
+
+def combined_cnn_mnist_model(x, dropout_rate):
+    pass
+
+def bootstrap_cnn_mnist_model(x, n_heads):
+    pass

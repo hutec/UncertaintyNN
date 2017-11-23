@@ -46,9 +46,11 @@ Results can be found in `results` or generated with
 
 or all at once with `python evaluation/evaluate_all.py`
 
-
-
 ## TODO
 - Working with higher dimensional data (MNIST)
 - Analyze influence of adversarial attacks
+
+
+## Problems
+- When running on the command-line, you might have to set $PYTHONPATH to the root dir: `export PYTHONPATH=.`  
 
