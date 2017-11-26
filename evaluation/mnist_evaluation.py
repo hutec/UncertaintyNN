@@ -10,8 +10,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from scipy.stats import bernoulli
 
-def mnist_dropout_evaluation(n_passes=50, dropout_rate=0.3, learning_rate=1e-4, epochs=20000, display_step=2000):
+
+def mnist_dropout_evaluation(n_passes=50, dropout_rate=0.5, learning_rate=1e-4, epochs=10000, display_step=2000):
     """
 
     :param n_passes:
@@ -43,7 +45,7 @@ def mnist_dropout_evaluation(n_passes=50, dropout_rate=0.3, learning_rate=1e-4, 
     for epoch in range(epochs):
         batch = mnist.train.next_batch(50)
 
-        sess.run(train_step, feed_dict={x_data: batch[0], y_data: batch[1], dropout_rate_data: 0.5})
+        sess.run(train_step, feed_dict={x_data: batch[0], y_data: batch[1], dropout_rate_data: dropout_rate})
 
         if epoch % display_step == 0:
             print("Epoch {}".format(epoch))
@@ -84,6 +86,57 @@ def mnist_dropout_evaluation(n_passes=50, dropout_rate=0.3, learning_rate=1e-4, 
 
     # np.array([[e] * 10 for e in batch[0]]).reshape(-1, 500)
 
+def mnist_bootstrap_evaluation(n_heads=5, dropout_rate=0.3, learning_rate=1e-4, epochs=20000, display_step=2000):
+    mnist = input_data.read_data_sets("../data/MNIST-data", one_hot=True)
+
+    x_data = tf.placeholder(tf.float32, shape=[None, 784])
+    y_data = tf.placeholder(tf.float32, shape=[None, 10])
+    dropout_rate_data = tf.placeholder(tf.float32)
+
+    heads = mnist_model.bootstrap_cnn_mnist_model(x_data, dropout_rate_data)
+    optimizer = tf.train.AdamOptimizer(learning_rate)
+
+    loss_per_head = []
+    train_per_head = []
+    accuracy_per_head = []
+    for head in heads:
+        logits, class_prob = head
+        loss = tf.losses.softmax_cross_entropy(onehot_labels=y_data, logits=logits)
+        loss_per_head.append(loss)
+        train_per_head.append(optimizer.minimize(loss))
+
+        correct_prediction = tf.equal(tf.argmax(class_prob, 1), tf.argmax(y_data, 1))
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        accuracy_per_head.append(accuracy) 
+
+    rv = bernoulli(0.5)
+    mask = rv.rvs(size=(n_heads, 50))
+
+    init = tf.global_variables_initializer()
+    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+    sess.run(init)
+
+    variable_list = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="mnist")[:16] 
+    saver = tf.train.Saver(var_list=variable_list)
+
+    for epoch in range(epochs):
+        batch = mnist.train.next_batch(50)
+        x, y = batch
+
+        for i, train_step in enumerate(train_per_head):
+            masked_x = x[mask[i] == 1, :]
+            masked_y = y[mask[i] == 1, :]
+            sess.run(train_step, feed_dict={x_data: x, y_data: y, dropout_rate_data: 0.5})
+
+        if epoch % display_step == 0:
+            print("Epoch {}".format(epoch))
+            for i, a in enumerate(accuracy_per_head):
+                cur_acc = sess.run(a, feed_dict={x_data: x, y_data: y, dropout_rate_data: 0.5})
+                print("Head {}, Accuracy: {}".format(i, cur_acc))
+
+            saver_path = saver.save(sess, "mnist_boostrap.ckpt")
+
 
 if __name__ == "__main__":
-    mnist_dropout_evaluation(epochs=10000)
+    # mnist_dropout_evaluation(epochs=10000)
+    mnist_bootstrap_evaluation(display_step=50)
