@@ -3,7 +3,8 @@ import tensorflow as tf
 
 def dropout_cnn_mnist_model(x, dropout_rate, reuse=False):
     """
-    Builds a simple CNN MNIST classifier
+    Builds a simple CNN MNIST classifier with dropout after every layer
+    that contains learned weights.
 
     :param x:
     :param reuse: True if reusing layer scopes
@@ -51,7 +52,7 @@ def dropout_cnn_mnist_model(x, dropout_rate, reuse=False):
     return logits, class_prob
 
 
-def combined_cnn_mnist_model(x, dropout_rate):
+def combined_cnn_mnist_model(x, dropout_rate, reuse=False):
     """
     Model learns to predict aleatoric uncertainty as output
     """
@@ -95,7 +96,11 @@ def combined_cnn_mnist_model(x, dropout_rate):
             logits = tf.layers.dense(inputs=dropout3, units=10)
             class_prob = tf.nn.softmax(logits, name="softmax_tensor")
 
-    return logits, class_prob
+        # uncertainty layer
+        with tf.variable_scope("fc2_2", reuse=reuse):
+            uncertainty = tf.layers.dense(inputs=dropout3, units=10)
+
+    return logits, class_prob, uncertainty
 
 def bootstrap_cnn_mnist_model(x, dropout_rate, n_heads=5, reuse=False):
     """
