@@ -1,10 +1,10 @@
-from models import mixture_model
+from models import dropout_model
 from data import sample_generators
 
 import tensorflow as tf
 
 
-def mixture_training(x_truth, y_truth, dropout, learning_rate, epochs, n_mixtures, display_step=2000):
+def dropout_training(x_truth, y_truth, dropout, learning_rate, epochs, display_step=2000):
     """
     Generic training of a Mixture Density Mixture Network for 2D data.
 
@@ -13,30 +13,18 @@ def mixture_training(x_truth, y_truth, dropout, learning_rate, epochs, n_mixture
     :param dropout:
     :param learning_rate:
     :param epochs:
-    :param n_mixtures: Number of mixtures in GMM
     :param display_step:
     :return: session, x_placeholder, dropout_placeholder
     """
     x_placeholder = tf.placeholder(tf.float32, [None, 1])
     y_placeholder = tf.placeholder(tf.float32, [None, 1])
     dropout_placeholder = tf.placeholder(tf.float32)
-    eps = 1e-4
 
-    gmm, mean, uncertainties = mixture_model.mixture_model(x_placeholder, dropout_placeholder, n_mixtures=n_mixtures)
+    prediction = dropout_model.dropout_model(x_placeholder, dropout_placeholder)
 
-    tf.add_to_collection("gmm", gmm)
-    tf.add_to_collection("prediction", mean)
-    tf.add_to_collection("uncertainties", uncertainties)
+    tf.add_to_collection("prediction", prediction)
 
-    mixture_weights = gmm[0]
-    mixture_means = gmm[1]
-    mixture_variances = gmm[2]
-
-    dist = tf.distributions.Normal(loc=mixture_means, scale=mixture_variances)
-    loss = - tf.reduce_mean(
-        tf.log(tf.reduce_sum(mixture_weights * dist.prob(y_placeholder), axis=1) + eps),
-        axis=0
-    )
+    loss = tf.losses.mean_squared_error(y_placeholder, prediction)
 
     optimizer = tf.train.AdamOptimizer(learning_rate)
     train = optimizer.minimize(loss)
@@ -61,12 +49,4 @@ def mixture_training(x_truth, y_truth, dropout, learning_rate, epochs, n_mixture
     print("Training done")
 
     return sess, x_placeholder, dropout_placeholder
-
-
-if __name__ == "__main__":
-    x, y = sample_generators.generate_osband_nonlinear_samples()
-    mixture_training(x, y, 0.3, 1e-3, 20000)
-
-
-
 

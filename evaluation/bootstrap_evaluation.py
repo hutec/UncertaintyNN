@@ -4,50 +4,9 @@ import numpy as np
 import plotting
 
 from training.bootstrap_training import bootstrap_training
-import matplotlib.pyplot as plt
-# plt.switch_backend("Agg")
-import seaborn as sns
 
 
-def bootstrap_evaluation_depre(x, y, pred_range, n_heads=5, learning_rate=0.01, epochs=10000, display_step=2000):
-    # Plotting
-
-    # axs[0]: single heads
-    # axs[1]: mean and std
-    fig, axs = plt.subplots(2, 1, sharey=True, figsize=(20, 20))
-
-    pred_x = pred_range.reshape([-1, 1])
-    pred_ys = []
-    for i, head in enumerate(heads):
-        pred_y = sess.run(head, feed_dict={x_data: pred_x})
-        pred_ys.append(pred_y)
-        axs[0].plot(pred_x, pred_y, label="Head " + str(i))
-    axs[0].scatter(x, y, label="training samples", alpha=0.3)
-
-    y_squeezed = np.squeeze(pred_ys, axis=2).transpose()
-    y_mean = np.mean(y_squeezed, axis=1)
-    y_var = np.std(y_squeezed, axis=1)
-    axs[0].legend()
-    axs[0].fill_between(np.squeeze(pred_x, axis=1), y_mean - y_var, y_mean + y_var, alpha=0.3)
-
-    lower = axs[0].get_ylim()[0]
-    axs[0].fill_between(np.squeeze(pred_x, axis=1), lower, lower + y_var, alpha=0.1)
-
-    _ = axs[0].set_title("Different head approximations and their Standard Deviation")
-
-    #axs[1].fill_between(np.squeeze(pred_x, axis=1), 0, y_var, alpha=0.5)
-
-    axs[1].scatter(x, y)
-    axs[1].plot(pred_x, y_mean, linewidth=1, alpha=1)
-    axs[1].fill_between(np.squeeze(pred_x, axis=1), y_mean - y_var, y_mean + y_var, alpha=0.1, color="blue")
-    _ = axs[1].set_title("Mean and Standard Deviation")
-
-    plt.suptitle("Bootstrap-Model | Heads: {}, Epochs: {}, Learning Rate {}".format(
-        n_heads, epochs, learning_rate
-    ))
-    plt.show()
-    return fig
-
+# plt.suptitle("Bootstrap-Model | Heads: {}, Epochs: {}, Learning Rate {}".format(
 
 def bootstrap_evaluation(x, y, dropout, learning_rate, epochs, n_heads):
     sess, x_placeholder, dropout_placeholder, mask_placeholder =\
