@@ -1,10 +1,30 @@
-import tensorflow as tf
-import numpy as np
-import pandas as pd
+from colors import theme
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy.ma as ma
+
+
+def plot_mean_vs_truth(x_truth, y_truth, x_prediction, y_prediction, std=None):
+    """
+
+    :param x_truth: x training sample
+    :param y_truth: y training sample
+    :param x_prediction: x evaluation
+    :param y_prediction: y evaluation (predicted)
+    :param std: (optional) standard deviation for every prediction
+    :return: fig, ax
+    """
+    fig, ax = plt.subplots(1, 1, figsize=(30, 10))
+    ax.scatter(x_truth, y_truth, label="Truth", color=theme["truth"])
+    ax.plot(x_prediction, y_prediction, label="Prediction", color=theme["prediction_mean"])
+
+    if std is not None:
+        ax.fill_between(x_prediction.flatten(), y_prediction - std, y_prediction + std,
+                        color=theme["prediction_std"], alpha=0.3, label="Prediction std")
+    ax.legend()
+
+    return fig, ax
 
 
 def plot_samples_per_head(x, y, n_heads, mask):

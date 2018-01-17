@@ -1,72 +1,15 @@
-from models import bootstrap_model
-from data import  sample_generators
+from data import sample_generators
 
-import tensorflow as tf
 import numpy as np
-from scipy.stats import bernoulli
-import numpy.ma as ma
+import plotting
 
-import matplotlib
-matplotlib.use("Agg")
+from training.bootstrap_training import bootstrap_training
 import matplotlib.pyplot as plt
+# plt.switch_backend("Agg")
 import seaborn as sns
 
 
-def bootstrap_evaluation(x, y, pred_range, n_heads=5, learning_rate=0.01, epochs=10000, display_step=2000):
-    """
-    Bootstrap network evaluation given x and y.
-
-    :param x:
-    :param y:
-    :param pred_range:
-    :param n_heads:
-    :param epochs:
-    :return:
-    """
-    assert len(x) == len(y)
-
-    x = x.astype(np.float32)
-    y = y.astype(np.float32)
-
-    x = x.reshape([-1, 1])
-    y = y.reshape([-1, 1])
-    rv = bernoulli(0.5)
-    mask = rv.rvs(size=(n_heads, len(x)))
-
-    x_data = tf.placeholder(tf.float32, [None, 1])
-    y_data = tf.placeholder(tf.float32, [None, 1])
-
-    heads = bootstrap_model.boostrap_model(x_data, n_heads)
-    optimizer = tf.train.AdamOptimizer(learning_rate)
-
-    loss_per_head = []
-    train_per_head = []
-    for head in heads:
-        loss = tf.losses.mean_squared_error(y_data, head)
-        loss_per_head.append(loss)
-        train_per_head.append(optimizer.minimize(loss))
-
-    init = tf.global_variables_initializer()
-    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
-    sess.run(init)
-
-    for epoch in range(epochs):
-        for i, t in enumerate(train_per_head):
-            masked_x = ma.masked_array(x, mask[i]).compressed().reshape([-1, 1])
-            masked_y = ma.masked_array(y, mask[i]).compressed().reshape([-1, 1])
-            sess.run(t, feed_dict={x_data: masked_x, y_data: masked_y})
-
-        if epoch % display_step == 0:
-            print("Epoch {}".format(epoch))
-            for i, loss in enumerate(loss_per_head):
-                curLoss = sess.run(loss, feed_dict={x_data: x.reshape([-1, 1]),
-                                                    y_data: y.reshape([-1, 1])})
-                print("Head {}: Loss {}".format(i, curLoss))
-            print("================")
-
-    print("Training done")
-
-
+def bootstrap_evaluation_depre(x, y, pred_range, n_heads=5, learning_rate=0.01, epochs=10000, display_step=2000):
     # Plotting
 
     # axs[0]: single heads
@@ -106,28 +49,45 @@ def bootstrap_evaluation(x, y, pred_range, n_heads=5, learning_rate=0.01, epochs
     return fig
 
 
-def bootstrap_osband_sin_evaluation(n_samples=50, n_heads=5, learning_rate=0.001, epochs=8000,
-                                    display_step=2000):
+def bootstrap_evaluation(x, y, dropout, learning_rate, epochs, n_heads):
+    sess, x_placeholder, dropout_placeholder, mask_placeholder =\
+        bootstrap_training(x, y, dropout, learning_rate, epochs, n_heads)
 
-    x, y = sample_generators.generate_osband_sin_samples(size=n_samples)
-    pred_range = np.arange(-0.2, 1.2, 0.01)
-    fig = bootstrap_evaluation(x, y, pred_range, n_heads, learning_rate, epochs, display_step)
+    prediction_op = sess.graph.get_collection("prediction")
+    uncertainty_op = sess.graph.get_collection("uncertainties")
 
-    fig.savefig("results/bootstrap_sinus_heads{}_samples{}_epochs{}_lr{}.pdf".format(
-        n_heads, n_samples, epochs, learning_rate
-    ))
+    x_eval = np.linspace(1.1 * np.min(x), 1.1 * np.max(x), 100).reshape([-1, 1])
+    feed_dict = {x_placeholder: x_eval,
+                 dropout_placeholder: 0,
+                 mask_placeholder: np.ones(shape=(len(x_eval), n_heads, 1))}
+
+    y_eval, uncertainties_eval = sess.run([prediction_op, uncertainty_op], feed_dict)
+    y_eval = y_eval[0].flatten()
+    uncertainties_eval = uncertainties_eval[0].flatten()
+
+    fig, ax, = plotting.plot_mean_vs_truth(x, y,
+                                           x_eval, y_eval, uncertainties_eval)
+
+    return fig, ax
+    # fig.savefig("results/bootstrap_sinus_heads{}_samples{}_epochs{}_lr{}.pdf".format(
+    #     n_heads, n_samples, epochs, learning_rate
+    # ))
 
 
-def bootstrap_osband_nonlinear_evaluation(n_heads=5, learning_rate=0.001, epochs=8000,
-                                          display_step=2000):
+def bootstrap_osband_sin_evaluation(dropout, learning_rate, epochs, n_heads):
+    x, y = sample_generators.generate_osband_sin_samples()
+    fig, ax = bootstrap_evaluation(x, y, dropout, learning_rate, epochs, n_heads)
+    return fig, ax
+
+
+def bootstrap_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_heads):
     x, y = sample_generators.generate_osband_nonlinear_samples()
-    pred_range = np.arange(-2.5, 2.5, 0.01)
-    fig = bootstrap_evaluation(x, y, pred_range, n_heads, learning_rate, epochs, display_step)
-    fig.savefig("results/bootstrap_nonlinear_heads{}_epochs{}_lr{}.pdf".format(
-        n_heads, epochs, learning_rate
-    ))
+    fig, ax = bootstrap_evaluation(x, y, dropout, learning_rate, epochs, n_heads)
+    return fig, ax
 
 
 if __name__ == "__main__":
-    bootstrap_osband_sin_evaluation(n_samples=50, n_heads=5, epochs=12000)
-    bootstrap_osband_nonlinear_evaluation(n_heads=10, epochs=8000)
+    #bootstrap_osband_sin_evaluation(n_samples=50, n_heads=5, epochs=12000)
+    f, a = bootstrap_osband_nonlinear_evaluation(0.3, 1e-3, n_heads=10, epochs=20000)
+    from IPython import embed
+    embed()

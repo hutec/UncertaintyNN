@@ -47,7 +47,7 @@ def generate_linear_samples(size=30):
     Generate simple linear samples
 
     :param size: number of samples
-    :return:
+    :return: x, y
     """
 
     # TODO
