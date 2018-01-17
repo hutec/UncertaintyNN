@@ -12,11 +12,13 @@ def mixture_model(x, dropout_rate, n_mixtures):
     :return: gmm, mean, uncertainties
     """
     sigma_max = 5
+    keep_prob = 1 - dropout_rate
+
     fc1 = tf.layers.dense(inputs=x, units=50, activation=tf.nn.relu)
-    fc1 = tf.layers.dropout(fc1, dropout_rate, training=True)
+    fc1 = tf.nn.dropout(fc1, keep_prob)
 
     fc2 = tf.layers.dense(inputs=fc1, units=50, activation=tf.nn.relu)
-    fc2 = tf.layers.dropout(fc2, dropout_rate, training=True)
+    fc2 = tf.layers.dropout(fc2, keep_prob)
 
     with tf.variable_scope("gmm") as scope:
         # Gaussian Mixture Model (GMM) output used for loss
