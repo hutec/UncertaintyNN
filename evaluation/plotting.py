@@ -27,6 +27,24 @@ def plot_mean_vs_truth(x_truth, y_truth, x_prediction, y_prediction, std=None):
     return fig, ax
 
 
+def plot_mean_vs_truth_with_uncertainties(x_truth, y_truth, x_prediction, y_prediction,
+                                          aleatoric, epistemic):
+    """
+    Same as plot_mean_vs_truth but with the uncertainties splitted into aleatoric and epistemic.
+
+    :param x_truth:
+    :param y_truth:
+    :param x_prediction:
+    :param y_prediction:
+    :param std:
+    :return: fig, ax
+    """
+    pass
+
+def plot_gmm_weights(gmm_weights):
+    """Plot GMM weights over samples"""
+
+
 def plot_samples_per_head(x, y, n_heads, mask):
     """
     Plots the sample masks per head
