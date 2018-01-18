@@ -18,6 +18,7 @@ def bootstrap_training(x_truth, y_truth, dropout, learning_rate, epochs, n_heads
     :param display_step:
     :return: session, x_placeholder, dropout_placeholder, mask_placeholder
     """
+    tf.reset_default_graph()
     x_placeholder = tf.placeholder(tf.float32, [None, 1])
     y_placeholder = tf.placeholder(tf.float32, [None, 1])
     dropout_placeholder = tf.placeholder(tf.float32)

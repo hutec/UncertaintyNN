@@ -6,11 +6,15 @@ uncertainty in neural networks.
 - Bootstrapping-Method from Osband
 - Dropout-Method by Gal
 - Combined method (heteroscedastic aleatoric + epistemic) from Kendal & Gal
+- Mixture Density Networks as used by Choi et al.
 
 
 Those models are evaluated on 2D data proposed by Osband. Specifically there is a dataset 
 having six points at (-1,1) , (-1,-1), (0,1), (0,-1), (1,1), (1,-1) which shows problems with
 the Dropout and Combined Method. And a ''x + sin(x)'' function with added noise.
+
+Additionally the evaluation is done on MNIST data, for which I crafted adversarial attacks
+to evaluate the effectiveness of the Uncertainty methods.
 
 ## Methods
 
@@ -36,13 +40,19 @@ epistemic uncertainty separated and also combine them.
 
 https://arxiv.org/pdf/1703.04977.pdf
 
+### Mixture Density Networks
+The last layer(s) are replaced by a layer that output Gaussian Mixture Models. 
+
+https://arxiv.org/pdf/1709.02249.pdf
+
 
 ## Results
 Results can be found in `results` or generated with
 
 - `python evaluation/boostrap_evaluation.py`
-- `python evaluation/combined_uncertainty_evaluation.py`
+- `python evaluation/combined_evaluation.py`
 - `python evaluation/dropout_evaluation.py`
+- `python evaluation/mixture_evaluation.py`
 
 or all at once with `python evaluation/evaluate_all.py`
 
