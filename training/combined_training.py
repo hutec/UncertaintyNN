@@ -1,12 +1,13 @@
-from models import dropout_model
+from models import combined_model
 from data import sample_generators
+import matplotlib.pyplot as plt
 
 import tensorflow as tf
 
 
-def dropout_training(x_truth, y_truth, dropout, learning_rate, epochs, display_step=2000):
+def combined_training(x_truth, y_truth, dropout, learning_rate, epochs, display_step=2000):
     """
-    Generic training of a Dropout Network for 2D data.
+    Generic training of a Combined (uncertainty) network for 2D data.
 
     :param x_truth: training samples x
     :param y_truth: training samples y / label
@@ -16,15 +17,18 @@ def dropout_training(x_truth, y_truth, dropout, learning_rate, epochs, display_s
     :param display_step:
     :return: session, x_placeholder, dropout_placeholder
     """
+    tf.reset_default_graph()
     x_placeholder = tf.placeholder(tf.float32, [None, 1])
     y_placeholder = tf.placeholder(tf.float32, [None, 1])
     dropout_placeholder = tf.placeholder(tf.float32)
 
-    prediction = dropout_model.dropout_model(x_placeholder, dropout_placeholder)
+    prediction, log_variance = combined_model.combined_model(x_placeholder, dropout_placeholder)
 
     tf.add_to_collection("prediction", prediction)
+    tf.add_to_collection("log_variance", log_variance)
 
-    loss = tf.losses.mean_squared_error(y_placeholder, prediction)
+    loss = tf.reduce_sum(0.5 * tf.exp(-1 * log_variance) * tf.square(tf.abs(y_placeholder - prediction))
+                         + 0.5 * log_variance)
 
     optimizer = tf.train.AdamOptimizer(learning_rate)
     train = optimizer.minimize(loss)
@@ -49,4 +53,3 @@ def dropout_training(x_truth, y_truth, dropout, learning_rate, epochs, display_s
     print("Training done")
 
     return sess, x_placeholder, dropout_placeholder
-

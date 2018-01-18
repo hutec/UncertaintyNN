@@ -15,7 +15,7 @@ def dropout_evaluation(x, y, dropout, learning_rate, epochs, n_passes):
     x_eval = np.linspace(1.1 * np.min(x), 1.1 * np.max(x), 100).reshape([-1, 1])
 
     feed_dict = {x_placeholder: x_eval,
-                 dropout_placeholder: 0.5}
+                 dropout_placeholder: dropout}
 
     predictions = []
     for _ in range(n_passes):
@@ -43,5 +43,5 @@ def dropout_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_passes
 
 
 if __name__ == "__main__":
-    f, a = dropout_osband_sin_evaluation(0.5, 1e-3, 30000, 20)
+    f, a = dropout_osband_sin_evaluation(0, 1e-3, 20000, 20)
     #dropout_osband_nonlinear_evaluation()

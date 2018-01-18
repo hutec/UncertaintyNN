@@ -1,5 +1,5 @@
 from bootstrap_evaluation import *
-from combined_uncertainty_evaluation import  *
+from combined_evaluation import  *
 from dropout_evaluation import *
 
 if __name__ == "__main__":
