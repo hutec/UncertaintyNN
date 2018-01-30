@@ -1,4 +1,11 @@
+from matplotlib.backends.backend_pdf import PdfPages
+
 from data import sample_generators
+
+import tensorflow as tf
+import numpy as np
+import plotting
+import matplotlib.pyplot as plt
 
 import numpy as np
 import plotting
@@ -46,7 +53,15 @@ def bootstrap_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_head
 
 
 if __name__ == "__main__":
-    #bootstrap_osband_sin_evaluation(n_samples=50, n_heads=5, epochs=12000)
-    f, a = bootstrap_osband_nonlinear_evaluation(0.3, 1e-3, n_heads=10, epochs=20000)
-    from IPython import embed
-    embed()
+    with PdfPages('Bootstrap_Sinus.pdf') as pdf:
+        for n_heads in [1, 3, 5, 10]:
+            f, a = bootstrap_osband_sin_evaluation(0.3, 1e-3, 20000, n_heads)
+            pdf.savefig(f)
+            plt.close()
+
+    with PdfPages('Bootstrap_Nonlinear.pdf') as pdf:
+        for n_heads in [1, 3, 5, 10]:
+            f, a = bootstrap_osband_nonlinear_evaluation(0.2, 1e-3, 10000, n_heads)
+            pdf.savefig(f)
+            plt.close()
+

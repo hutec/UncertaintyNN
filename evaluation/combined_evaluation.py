@@ -1,3 +1,5 @@
+from matplotlib.backends.backend_pdf import PdfPages
+
 from data import sample_generators
 
 import tensorflow as tf
@@ -9,6 +11,16 @@ from training.combined_training import combined_training
 
 
 def combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes):
+    """
+
+    :param x:
+    :param y:
+    :param dropout:
+    :param learning_rate:
+    :param epochs:
+    :param n_passes:
+    :return:
+    """
     sess, x_placeholder, dropout_placeholder = \
         combined_training(x, y, dropout, learning_rate, epochs)
 
@@ -35,6 +47,8 @@ def combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes):
 
     fig, ax, = plotting.plot_mean_vs_truth(x, y,
                                            x_eval, y_eval, aleatoric_eval)
+    fig.suptitle("Dropout - Learning Rate %f, Epochs %d, Dropout %f, Passes %d" %
+                 (learning_rate, epochs, dropout, n_passes))
 
     ax.fill_between(x_eval.flatten(), 0, epistemic_eval, label="epistemic")
     ax.legend()
@@ -56,7 +70,14 @@ def combined_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_passe
 
 
 if __name__ == "__main__":
-    f, a = combined_osband_sin_evaluation(0.3, 1e-3, 10000, 100)
-    f, a = combined_osband_nonlinear_evaluation(0.3, 1e-3, 8000, 100)
-    plt.show()
-    #combined_osband_nonlinear_evaluation(epochs=10000)
+    with PdfPages('Combined_Sinus.pdf') as pdf:
+        for dropout in [0.3, 0.4, 0.5]:
+            f, a = combined_osband_sin_evaluation(dropout, 1e-3, 20000, 100)
+            pdf.savefig(f)
+            plt.close()
+
+    with PdfPages('Combined_Nonlinear.pdf') as pdf:
+        for dropout in [0.3, 0.4, 0.5]:
+            f, a = combined_osband_nonlinear_evaluation(dropout, 1e-3, 8000, 100)
+            pdf.savefig(f)
+            plt.close()

@@ -1,3 +1,6 @@
+from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.pyplot as plt
+
 from data import sample_generators
 
 import numpy as np
@@ -43,10 +46,17 @@ def mixture_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_mixtur
 
 
 if __name__ == "__main__":
-    # f, a = mixture_osband_sin_evaluation(0.3, 1e-3, n_mixtures=5, epochs=10000)
-    f, a = mixture_osband_nonlinear_evaluation(0.3, 1e-4, n_mixtures=10, epochs=20000)
-    from IPython import embed
-    embed()
+    with PdfPages('Mixture_Sinus.pdf') as pdf:
+        for n_mixtures in [1, 3, 5, 10]:
+            f, a = mixture_osband_nonlinear_evaluation(0.3, 1e-4, n_mixtures=n_mixtures, epochs=20000)
+            pdf.savefig(f)
+            plt.close()
+
+    with PdfPages('Mixture_Nonlinear.pdf') as pdf:
+        for n_mixtures in [1, 3, 5, 10]:
+            f, a = mixture_osband_sin_evaluation(0.3, 1e-4, n_mixtures=n_mixtures, epochs=20000)
+            pdf.savefig(f)
+            plt.close()
 
 
 

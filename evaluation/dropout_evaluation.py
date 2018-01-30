@@ -1,7 +1,9 @@
+from matplotlib.backends.backend_pdf import PdfPages
 from data import sample_generators
 
 import numpy as np
 import plotting
+import matplotlib.pyplot as plt
 
 from training.dropout_training import dropout_training
 
@@ -43,5 +45,14 @@ def dropout_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_passes
 
 
 if __name__ == "__main__":
-    f, a = dropout_osband_sin_evaluation(0, 1e-3, 20000, 20)
-    #dropout_osband_nonlinear_evaluation()
+    with PdfPages('Dropout_Sinus.pdf') as pdf:
+        for dropout in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
+            f, a = dropout_osband_sin_evaluation(dropout, 1e-3, 20000, 100)
+            pdf.savefig(f)
+            plt.close()
+
+    with PdfPages('Dropout_Nonlinear.pdf') as pdf:
+        for dropout in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
+            f, a = dropout_osband_nonlinear_evaluation(dropout, 1e-3, 8000, 100)
+            pdf.savefig(f)
+            plt.close()

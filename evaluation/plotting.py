@@ -39,10 +39,24 @@ def plot_mean_vs_truth_with_uncertainties(x_truth, y_truth, x_prediction, y_pred
     :param std:
     :return: fig, ax
     """
-    pass
+    fig, ax = plt.subplots(1, 1, figsize=(30, 10))
+    ax.scatter(x_truth, y_truth, label="Truth", color=theme["truth"])
+    ax.plot(x_prediction, y_prediction, label="Prediction", color=theme["prediction_mean"])
+
+    ax.plot(x_prediction, aleatoric, label="Aleatoric", color=theme["aleatoric"])
+    ax.plot(x_prediction, epistemic, label="Epistemic", color=theme["epistemic"])
+
+
+    # if std is not None:
+    #     ax.fill_between(x_prediction.flatten(), y_prediction - std, y_prediction + std,
+    #                     color=theme["prediction_std"], alpha=0.3, label="Prediction std")
+    # ax.legend()
+
+    return fig, ax
 
 def plot_gmm_weights(gmm_weights):
     """Plot GMM weights over samples"""
+    pass
 
 
 def plot_samples_per_head(x, y, n_heads, mask):
