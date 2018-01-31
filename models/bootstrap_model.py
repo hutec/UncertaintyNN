@@ -15,12 +15,11 @@ def bootstrap_model(x, dropout_rate, n_heads, mask):
     """
     keep_prob = 1 - dropout_rate
 
-    fc1 = tf.layers.dense(inputs=x, units=50, activation=tf.nn.relu)
-    fc1 = tf.nn.dropout(fc1, keep_prob)
-
     with tf.variable_scope("bootstrap_heads"):
         heads = []
         for i in range(n_heads):
+            fc1 = tf.layers.dense(inputs=x, units=50, activation=tf.nn.relu)
+            fc1 = tf.nn.dropout(fc1, keep_prob)
             fc2 = tf.layers.dense(inputs=fc1, units=50, activation=tf.nn.relu)
             heads.append(tf.layers.dense(inputs=fc2, units=1))
 
