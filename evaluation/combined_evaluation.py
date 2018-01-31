@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from training.combined_training import combined_training
 
 
-def combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes):
+def combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax):
     """
 
     :param x:
@@ -45,39 +45,32 @@ def combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes):
     aleatoric_eval = np.mean(aleatorics, axis=0).flatten()
     total_uncertainty_eval = epistemic_eval + aleatoric_eval
 
-    fig, ax, = plotting.plot_mean_vs_truth(x, y,
-                                           x_eval, y_eval, aleatoric_eval)
+    plotting.plot_mean_vs_truth(x, y, x_eval, y_eval, aleatoric_eval, ax)
     fig.suptitle("Dropout - Learning Rate %f, Epochs %d, Dropout %f, Passes %d" %
                  (learning_rate, epochs, dropout, n_passes))
 
     ax.fill_between(x_eval.flatten(), 0, epistemic_eval, label="epistemic")
     ax.legend()
-    sess.close()
-
-    return fig, ax
 
 
-def combined_osband_sin_evaluation(dropout, learning_rate, epochs, n_passes):
+def combined_osband_sin_evaluation(dropout, learning_rate, epochs, n_passes, ax=None):
     x, y = sample_generators.generate_osband_sin_samples(60)
-    fig, ax = combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes)
-    return fig, ax
+    combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax)
 
 
-def combined_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_passes):
+def combined_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_passes, ax=None):
     x, y = sample_generators.generate_osband_nonlinear_samples()
-    fig, ax = combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes)
-    return fig, ax
+    combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax)
 
 
 if __name__ == "__main__":
-    with PdfPages('Combined_Sinus.pdf') as pdf:
-        for dropout in [0.3, 0.4, 0.5]:
-            f, a = combined_osband_sin_evaluation(dropout, 1e-3, 20000, 100)
-            pdf.savefig(f)
-            plt.close()
+    dropout_values = [0.1, 0.3, 0.5, 0.7]
+    fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)))
+    for dropout, ax in zip(dropout_values, axs):
+        combined_osband_sin_evaluation(dropout, 1e-3, 20000, 100, ax)
+        fig.savefig("Combined_Sinus.png")
 
-    with PdfPages('Combined_Nonlinear.pdf') as pdf:
-        for dropout in [0.3, 0.4, 0.5]:
-            f, a = combined_osband_nonlinear_evaluation(dropout, 1e-3, 8000, 100)
-            pdf.savefig(f)
-            plt.close()
+    fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)))
+    for dropout, ax in zip(dropout_values, axs):
+        combined_osband_nonlinear_evaluation(dropout, 1e-3, 20000, 100, ax)
+        fig.savefig("Combined_Nonlinear.png")

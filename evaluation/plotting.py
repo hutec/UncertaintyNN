@@ -5,7 +5,7 @@ import seaborn as sns
 import numpy.ma as ma
 
 
-def plot_mean_vs_truth(x_truth, y_truth, x_prediction, y_prediction, std=None):
+def plot_mean_vs_truth(x_truth, y_truth, x_prediction, y_prediction, std=None, ax=None):
     """
 
     :param x_truth: x training sample
@@ -13,22 +13,22 @@ def plot_mean_vs_truth(x_truth, y_truth, x_prediction, y_prediction, std=None):
     :param x_prediction: x evaluation
     :param y_prediction: y evaluation (predicted)
     :param std: (optional) standard deviation for every prediction
+    :param x: (optional) ax
     :return: fig, ax
     """
-    fig, ax = plt.subplots(1, 1, figsize=(30, 10))
+    if not ax:
+        ax = plt.gca()
     ax.scatter(x_truth, y_truth, label="Truth", color=theme["truth"])
     ax.plot(x_prediction, y_prediction, label="Prediction", color=theme["prediction_mean"])
 
     if std is not None:
         ax.fill_between(x_prediction.flatten(), y_prediction - std, y_prediction + std,
-                        color=theme["prediction_std"], alpha=0.3, label="Prediction std")
+                        color=theme["prediction_std"], alpha=0.3, label="Predictive Variance")
     ax.legend()
-
-    return fig, ax
 
 
 def plot_mean_vs_truth_with_uncertainties(x_truth, y_truth, x_prediction, y_prediction,
-                                          aleatoric, epistemic):
+                                          aleatoric, epistemic, ax=None):
     """
     Same as plot_mean_vs_truth but with the uncertainties splitted into aleatoric and epistemic.
 
@@ -39,7 +39,9 @@ def plot_mean_vs_truth_with_uncertainties(x_truth, y_truth, x_prediction, y_pred
     :param std:
     :return: fig, ax
     """
-    fig, ax = plt.subplots(1, 1, figsize=(30, 10))
+    if not ax:
+        ax = plt.gca()
+
     ax.scatter(x_truth, y_truth, label="Truth", color=theme["truth"])
     ax.plot(x_prediction, y_prediction, label="Prediction", color=theme["prediction_mean"])
 
@@ -52,14 +54,12 @@ def plot_mean_vs_truth_with_uncertainties(x_truth, y_truth, x_prediction, y_pred
     #                     color=theme["prediction_std"], alpha=0.3, label="Prediction std")
     # ax.legend()
 
-    return fig, ax
-
-def plot_gmm_weights(gmm_weights):
+def plot_gmm_weights(gmm_weights, ax=None):
     """Plot GMM weights over samples"""
     pass
 
 
-def plot_samples_per_head(x, y, n_heads, mask):
+def plot_samples_per_head(x, y, n_heads, mask, ax=None):
     """
     Plots the sample masks per head
 

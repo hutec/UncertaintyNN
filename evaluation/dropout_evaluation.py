@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from training.dropout_training import dropout_training
 
 
-def dropout_evaluation(x, y, dropout, learning_rate, epochs, n_passes):
+def dropout_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax):
     sess, x_placeholder, dropout_placeholder = \
         dropout_training(x, y, dropout, learning_rate, epochs)
 
@@ -26,33 +26,28 @@ def dropout_evaluation(x, y, dropout, learning_rate, epochs, n_passes):
     y_eval = np.mean(predictions, axis=0).flatten()
     uncertainty_eval = np.var(predictions, axis=0).flatten()
 
-    fig, ax, = plotting.plot_mean_vs_truth(x, y,
-                                           x_eval, y_eval, uncertainty_eval)
-
-    return fig, ax
+    plotting.plot_mean_vs_truth(x, y, x_eval, y_eval, uncertainty_eval, ax)
 
 
-def dropout_osband_sin_evaluation(dropout, learning_rate, epochs, n_passes):
+def dropout_osband_sin_evaluation(dropout, learning_rate, epochs, n_passes, ax=None):
     x, y = sample_generators.generate_osband_sin_samples()
-    fig, ax = dropout_evaluation(x, y, dropout, learning_rate, epochs, n_passes)
-    return fig, ax
+    dropout_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax)
 
 
-def dropout_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_passes):
+def dropout_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_passes, ax=None):
     x, y = sample_generators.generate_osband_nonlinear_samples()
-    fig, ax = dropout_evaluation(x, y, dropout, learning_rate, epochs, n_passes)
-    return fig, ax
+    dropout_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax)
 
 
 if __name__ == "__main__":
-    with PdfPages('Dropout_Sinus.pdf') as pdf:
-        for dropout in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
-            f, a = dropout_osband_sin_evaluation(dropout, 1e-3, 20000, 100)
-            pdf.savefig(f)
-            plt.close()
+    dropout_values = [0.1, 0.3, 0.5, 0.7]
+    fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)))
+    for dropout, ax in zip(dropout_values, axs):
+        dropout_osband_sin_evaluation(dropout, 1e-3, 20000, 100, ax)
+        fig.savefig("Dropout_Sinus.png")
 
-    with PdfPages('Dropout_Nonlinear.pdf') as pdf:
-        for dropout in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
-            f, a = dropout_osband_nonlinear_evaluation(dropout, 1e-3, 8000, 100)
-            pdf.savefig(f)
-            plt.close()
+    fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)))
+    for dropout, ax in zip(dropout_values, axs):
+        dropout_osband_nonlinear_evaluation(dropout, 1e-3, 20000, 100, ax)
+        fig.savefig("Dropout_Nonlinear.png")
+

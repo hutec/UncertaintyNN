@@ -9,7 +9,7 @@ import plotting
 from training.mixture_training import mixture_training
 
 
-def mixture_evaluation(x, y, dropout, learning_rate, epochs, n_mixtures):
+def mixture_evaluation(x, y, dropout, learning_rate, epochs, n_mixtures, ax):
     sess, x_placeholder, dropout_placeholder = \
         mixture_training(x, y, dropout, learning_rate, epochs, n_mixtures)
 
@@ -27,37 +27,29 @@ def mixture_evaluation(x, y, dropout, learning_rate, epochs, n_mixtures):
     aleatoric_eval, epistemic_eval = uncertainties_eval[0]
     total_uncertainty_eval = aleatoric_eval + epistemic_eval
 
-    fig, ax, = plotting.plot_mean_vs_truth(x, y,
-                                           x_eval, y_eval, total_uncertainty_eval)
-
-    return fig, ax
+    plotting.plot_mean_vs_truth(x, y, x_eval, y_eval, total_uncertainty_eval, ax)
 
 
-def mixture_osband_sin_evaluation(dropout, learning_rate, epochs, n_mixtures):
+def mixture_osband_sin_evaluation(dropout, learning_rate, epochs, n_mixtures, ax=None):
     x, y = sample_generators.generate_osband_sin_samples()
-    fig, ax = mixture_evaluation(x, y, dropout, learning_rate, epochs, n_mixtures)
-    return fig, ax
+    mixture_evaluation(x, y, dropout, learning_rate, epochs, n_mixtures, ax)
 
 
-def mixture_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_mixtures):
+def mixture_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_mixtures, ax=None):
     x, y = sample_generators.generate_osband_nonlinear_samples()
-    fig, ax = mixture_evaluation(x, y, dropout, learning_rate, epochs, n_mixtures)
-    return fig, ax
+    mixture_evaluation(x, y, dropout, learning_rate, epochs, n_mixtures, ax)
 
 
 if __name__ == "__main__":
-    with PdfPages('Mixture_Sinus.pdf') as pdf:
-        for n_mixtures in [1, 3, 5, 10]:
-            f, a = mixture_osband_nonlinear_evaluation(0.3, 1e-4, n_mixtures=n_mixtures, epochs=20000)
-            pdf.savefig(f)
-            plt.close()
+    mixture_values = [1, 3, 5, 10]
+    fig, axs = plt.subplots(len(mixture_values), 1, figsize=(30, 5*len(mixture_values)))
+    for n_mixtures, ax in zip(mixture_values, axs):
+        mixture_osband_sin_evaluation(0.3, 1e-4, n_mixtures=n_mixtures, epochs=20000, ax=ax)
+        fig.savefig("Mixture_Sinus.png")
 
-    with PdfPages('Mixture_Nonlinear.pdf') as pdf:
-        for n_mixtures in [1, 3, 5, 10]:
-            f, a = mixture_osband_sin_evaluation(0.3, 1e-4, n_mixtures=n_mixtures, epochs=20000)
-            pdf.savefig(f)
-            plt.close()
-
+    for n_mixtures, ax in zip(mixture_values, axs):
+        mixture_osband_nonlinear_evaluation(0.3, 1e-4, n_mixtures=n_mixtures, epochs=20000, ax=ax)
+        fig.savefig("Mixture_Nonlinear.png")
 
 
 

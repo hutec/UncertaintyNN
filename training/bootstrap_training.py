@@ -30,6 +30,7 @@ def bootstrap_training(x_truth, y_truth, dropout, learning_rate, epochs, n_heads
                                                             n_heads, mask_placeholder)
     tf.add_to_collection('prediction', mean)
     tf.add_to_collection('uncertainties', variance)
+    tf.add_to_collection('heads', heads)
 
     labels = tf.tile(tf.expand_dims(y_placeholder, axis=1), [1, n_heads, 1])
     # Loss is also only computed on masked heads
