@@ -56,6 +56,8 @@ Results can be found in `results` or generated with
 
 or all at once with `python evaluation/evaluate_all.py`
 
+![Bootstrap Results](results/Bootstrap_Sinus.png)
+
 ## TODO
 - Working with higher dimensional data (MNIST)
 - Analyze influence of adversarial attacks
