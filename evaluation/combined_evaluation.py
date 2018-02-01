@@ -28,7 +28,8 @@ def combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax):
     log_variance = sess.graph.get_collection("log_variance")
     aleatoric_op = tf.exp(log_variance)
 
-    x_eval = np.linspace(1.1 * np.min(x), 1.1 * np.max(x), 100).reshape([-1, 1])
+    additional_range = 0.2 * np.max(x)
+    x_eval = np.linspace(np.min(x) - additional_range, np.max(x) + additional_range, 100).reshape([-1, 1])
 
     feed_dict = {x_placeholder: x_eval,
                  dropout_placeholder: dropout}
@@ -49,7 +50,8 @@ def combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax):
     fig.suptitle("Dropout - Learning Rate %f, Epochs %d, Dropout %f, Passes %d" %
                  (learning_rate, epochs, dropout, n_passes))
 
-    ax.fill_between(x_eval.flatten(), 0, epistemic_eval, label="epistemic")
+    ax.fill_between(x_eval.flatten(), 0, epistemic_eval, label="epistemic", color="green", alpha=0.4)
+    ax.fill_between(x_eval.flatten(), 0, aleatoric_eval, label="aleatoric", color="orange", alpha=0.4)
     ax.legend()
 
 
@@ -65,12 +67,17 @@ def combined_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_passe
 
 if __name__ == "__main__":
     dropout_values = [0.1, 0.3, 0.5, 0.7]
-    fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)))
+    fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)), sharey=True)
+    fig.suptitle('Combined-Model | Epochs: 15000, Learning Rate: 1e-3', fontsize=20)
     for dropout, ax in zip(dropout_values, axs):
-        combined_osband_sin_evaluation(dropout, 1e-3, 20000, 100, ax)
+        ax.set_title("%.3f Dropout" % dropout)
+        combined_osband_sin_evaluation(dropout, 1e-3, 15000, 100, ax)
         fig.savefig("Combined_Sinus.png")
 
-    fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)))
+    fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)), sharey=True)
+    fig.suptitle('Combined-Model | Epochs: 15000, Learning Rate: 1e-3', fontsize=20)
     for dropout, ax in zip(dropout_values, axs):
+        ax.set_title("%.3f Dropout" % dropout)
+        combined_osband_sin_evaluation(dropout, 1e-3, 15000, 100, ax)
         combined_osband_nonlinear_evaluation(dropout, 1e-3, 20000, 100, ax)
         fig.savefig("Combined_Nonlinear.png")

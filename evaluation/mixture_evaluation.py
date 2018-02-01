@@ -17,7 +17,8 @@ def mixture_evaluation(x, y, dropout, learning_rate, epochs, n_mixtures, ax):
     uncertainty_op = sess.graph.get_collection("uncertainties")
     gmm_op = sess.graph.get_collection("gmm")
 
-    x_eval = np.linspace(1.1 * np.min(x), 1.1 * np.max(x), 100).reshape([-1, 1])
+    additional_range = 0.2 * np.max(x)
+    x_eval = np.linspace(np.min(x) - additional_range, np.max(x) + additional_range, 100).reshape([-1, 1])
     feed_dict = {x_placeholder: x_eval,
                  dropout_placeholder: 0}
 
@@ -27,7 +28,9 @@ def mixture_evaluation(x, y, dropout, learning_rate, epochs, n_mixtures, ax):
     aleatoric_eval, epistemic_eval = uncertainties_eval[0]
     total_uncertainty_eval = aleatoric_eval + epistemic_eval
 
-    plotting.plot_mean_vs_truth(x, y, x_eval, y_eval, total_uncertainty_eval, ax)
+    plotting.plot_mean_vs_truth_with_uncertainties(x, y, x_eval, y_eval, aleatoric_eval, epistemic_eval, ax)
+
+    ax.legend()
 
 
 def mixture_osband_sin_evaluation(dropout, learning_rate, epochs, n_mixtures, ax=None):
@@ -42,13 +45,18 @@ def mixture_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_mixtur
 
 if __name__ == "__main__":
     mixture_values = [1, 3, 5, 10]
-    fig, axs = plt.subplots(len(mixture_values), 1, figsize=(30, 5*len(mixture_values)))
+    fig, axs = plt.subplots(len(mixture_values), 1, figsize=(30, 5*len(mixture_values)), sharey=True)
+    fig.suptitle('Mixture-Model | Epochs: 20000, Learning Rate: 1e-3, Dropout 0.3', fontsize=20)
     for n_mixtures, ax in zip(mixture_values, axs):
-        mixture_osband_sin_evaluation(0.3, 1e-4, n_mixtures=n_mixtures, epochs=20000, ax=ax)
+        ax.set_title("%d Mixtures" % n_mixtures)
+        mixture_osband_sin_evaluation(0.3, 1e-3, n_mixtures=n_mixtures, epochs=15000, ax=ax)
         fig.savefig("Mixture_Sinus.png")
 
+    fig, axs = plt.subplots(len(mixture_values), 1, figsize=(30, 5*len(mixture_values)), sharey=True)
+    fig.suptitle('Mixture-Model | Epochs: 20000, Learning Rate: 1e-3, Dropout 0.3', fontsize=20)
     for n_mixtures, ax in zip(mixture_values, axs):
-        mixture_osband_nonlinear_evaluation(0.3, 1e-4, n_mixtures=n_mixtures, epochs=20000, ax=ax)
+        ax.set_title("%d Mixtures" % n_mixtures)
+        mixture_osband_nonlinear_evaluation(0.3, 1e-3, n_mixtures=n_mixtures, epochs=15000, ax=ax)
         fig.savefig("Mixture_Nonlinear.png")
 
 

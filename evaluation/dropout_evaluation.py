@@ -14,7 +14,8 @@ def dropout_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax):
 
     prediction_op = sess.graph.get_collection("prediction")
 
-    x_eval = np.linspace(1.1 * np.min(x), 1.1 * np.max(x), 100).reshape([-1, 1])
+    additional_range = 0.2 * np.max(x)
+    x_eval = np.linspace(np.min(x) - additional_range, np.max(x) + additional_range, 100).reshape([-1, 1])
 
     feed_dict = {x_placeholder: x_eval,
                  dropout_placeholder: dropout}

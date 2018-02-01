@@ -18,7 +18,8 @@ def bootstrap_evaluation(x, y, dropout, learning_rate, epochs, n_heads, ax):
     uncertainty_op = sess.graph.get_collection("uncertainties")
     heads_op = sess.graph.get_collection("heads")
 
-    x_eval = np.linspace(1.1 * np.min(x), 1.1 * np.max(x), 100).reshape([-1, 1])
+    additional_range = 0.2 * np.max(x)
+    x_eval = np.linspace(np.min(x) - additional_range, np.max(x) + additional_range, 100).reshape([-1, 1])
     feed_dict = {x_placeholder: x_eval,
                  dropout_placeholder: 0,
                  mask_placeholder: np.ones(shape=(len(x_eval), n_heads, 1))}

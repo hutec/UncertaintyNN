@@ -45,9 +45,16 @@ def plot_mean_vs_truth_with_uncertainties(x_truth, y_truth, x_prediction, y_pred
     ax.scatter(x_truth, y_truth, label="Truth", color=theme["truth"])
     ax.plot(x_prediction, y_prediction, label="Prediction", color=theme["prediction_mean"])
 
-    ax.plot(x_prediction, aleatoric, label="Aleatoric", color=theme["aleatoric"])
-    ax.plot(x_prediction, epistemic, label="Epistemic", color=theme["epistemic"])
+    # inner tube
+    ax.fill_between(x_prediction.flatten(), y_prediction - aleatoric , y_prediction + aleatoric,
+                    color=theme["aleatoric"], alpha=0.2, label="aleatoric")
 
+    # two outer tubes
+    ax.fill_between(x_prediction.flatten(), y_prediction - aleatoric , y_prediction - aleatoric - epistemic / 2.0,
+                    color=theme["epistemic"], alpha=0.3, label="epistemic")
+
+    ax.fill_between(x_prediction.flatten(), y_prediction + aleatoric , y_prediction + aleatoric + epistemic / 2.0,
+                    color=theme["epistemic"], alpha=0.3)
 
     # if std is not None:
     #     ax.fill_between(x_prediction.flatten(), y_prediction - std, y_prediction + std,
