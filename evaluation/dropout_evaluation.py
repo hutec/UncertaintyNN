@@ -9,12 +9,13 @@ from training.dropout_training import dropout_training
 
 
 def dropout_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax):
+    # Hardcoded training dropout
     sess, x_placeholder, dropout_placeholder = \
-        dropout_training(x, y, dropout, learning_rate, epochs)
+        dropout_training(x, y, 0.2, learning_rate, epochs)
 
     prediction_op = sess.graph.get_collection("prediction")
 
-    additional_range = 0.2 * np.max(x)
+    additional_range = 0.1 * np.max(x)
     x_eval = np.linspace(np.min(x) - additional_range, np.max(x) + additional_range, 100).reshape([-1, 1])
 
     feed_dict = {x_placeholder: x_eval,
@@ -41,14 +42,16 @@ def dropout_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_passes
 
 
 if __name__ == "__main__":
-    dropout_values = [0.1, 0.3, 0.5, 0.7]
-    fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)))
+    dropout_values = [0.1, 0.3, 0.5, 0.6]
+    fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)), sharey=True)
     for dropout, ax in zip(dropout_values, axs):
+        ax.set_title("%.3f Dropout" % dropout)
         dropout_osband_sin_evaluation(dropout, 1e-3, 20000, 100, ax)
         fig.savefig("Dropout_Sinus.png")
 
-    fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)))
-    for dropout, ax in zip(dropout_values, axs):
-        dropout_osband_nonlinear_evaluation(dropout, 1e-3, 20000, 100, ax)
-        fig.savefig("Dropout_Nonlinear.png")
+    # fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)), sharey=True)
+    # for dropout, ax in zip(dropout_values, axs):
+    #     ax.set_title("%.3f Dropout" % dropout)
+    #     dropout_osband_nonlinear_evaluation(dropout, 1e-3, 20000, 100, ax)
+    #     fig.savefig("Dropout_Nonlinear.png")
 
