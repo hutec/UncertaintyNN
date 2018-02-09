@@ -56,29 +56,21 @@ def combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax):
     ax.legend()
 
 
-def combined_osband_sin_evaluation(dropout, learning_rate, epochs, n_passes, ax=None):
-    x, y = sample_generators.generate_osband_sin_samples(60)
-    combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax)
-
-
-def combined_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_passes, ax=None):
-    x, y = sample_generators.generate_osband_nonlinear_samples()
-    combined_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax)
-
-
 if __name__ == "__main__":
     dropout_values = [0.1, 0.2, 0.3, 0.5]
     fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)), sharey=True)
     axs[0].set_ylim([-1, 3])
     fig.suptitle('Combined-Model | Epochs: 15000, Learning Rate: 1e-3', fontsize=20)
+    x, y = sample_generators.generate_osband_sin_samples(60)
     for dropout, ax in zip(dropout_values, axs):
         ax.set_title("%.3f Dropout" % dropout)
-        combined_osband_sin_evaluation(dropout, 1e-3, 20000, 500, ax)
-        fig.savefig("Combined_Sinus.png")
+        combined_evaluation(x, y, dropout, 1e-3, 20000, 500, ax)
+        fig.savefig("Combined_Sinus.pdf")
 
     fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)), sharey=True)
     fig.suptitle('Combined-Model | Epochs: 15000, Learning Rate: 1e-3', fontsize=20)
+    x, y = sample_generators.generate_osband_nonlinear_samples()
     for dropout, ax in zip(dropout_values, axs):
         ax.set_title("%.3f Dropout" % dropout)
-        combined_osband_nonlinear_evaluation(dropout, 1e-3, 20000, 500, ax)
-        fig.savefig("Combined_Nonlinear.png")
+        combined_evaluation(x, y, dropout, 1e-3, 20000, 500, ax)
+        fig.savefig("Combined_Nonlinear.pdf")

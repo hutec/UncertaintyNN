@@ -31,27 +31,19 @@ def dropout_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax):
     plotting.plot_mean_vs_truth(x, y, x_eval, y_eval, uncertainty_eval, ax)
 
 
-def dropout_osband_sin_evaluation(dropout, learning_rate, epochs, n_passes, ax=None):
-    x, y = sample_generators.generate_osband_sin_samples()
-    dropout_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax)
-
-
-def dropout_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_passes, ax=None):
-    x, y = sample_generators.generate_osband_nonlinear_samples()
-    dropout_evaluation(x, y, dropout, learning_rate, epochs, n_passes, ax)
-
-
 if __name__ == "__main__":
     dropout_values = [0.1, 0.3, 0.5, 0.6]
     fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)), sharey=True)
+    x, y = sample_generators.generate_osband_sin_samples()
     for dropout, ax in zip(dropout_values, axs):
         ax.set_title("%.3f Dropout" % dropout)
-        dropout_osband_sin_evaluation(dropout, 1e-3, 20000, 100, ax)
-        fig.savefig("Dropout_Sinus.png")
+        dropout_evaluation(x, y, dropout, 1e-3, 20000, 100, ax)
+        fig.savefig("Dropout_Sinus.pdf")
 
-    # fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)), sharey=True)
-    # for dropout, ax in zip(dropout_values, axs):
-    #     ax.set_title("%.3f Dropout" % dropout)
-    #     dropout_osband_nonlinear_evaluation(dropout, 1e-3, 20000, 100, ax)
-    #     fig.savefig("Dropout_Nonlinear.png")
+    fig, axs = plt.subplots(len(dropout_values), 1, figsize=(30, 5*len(dropout_values)), sharey=True)
+    x, y = sample_generators.generate_osband_nonlinear_samples()
+    for dropout, ax in zip(dropout_values, axs):
+        ax.set_title("%.3f Dropout" % dropout)
+        dropout_evaluation(x, y, dropout, 1e-3, 20000, 100, ax)
+        fig.savefig("Dropout_Nonlinear.pdf")
 

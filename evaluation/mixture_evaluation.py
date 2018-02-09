@@ -33,31 +33,23 @@ def mixture_evaluation(x, y, dropout, learning_rate, epochs, n_mixtures, ax):
     ax.legend()
 
 
-def mixture_osband_sin_evaluation(dropout, learning_rate, epochs, n_mixtures, ax=None):
-    x, y = sample_generators.generate_osband_sin_samples()
-    mixture_evaluation(x, y, dropout, learning_rate, epochs, n_mixtures, ax)
-
-
-def mixture_osband_nonlinear_evaluation(dropout, learning_rate, epochs, n_mixtures, ax=None):
-    x, y = sample_generators.generate_osband_nonlinear_samples()
-    mixture_evaluation(x, y, dropout, learning_rate, epochs, n_mixtures, ax)
-
-
 if __name__ == "__main__":
     mixture_values = [1, 3, 5, 10]
     fig, axs = plt.subplots(len(mixture_values), 1, figsize=(30, 5*len(mixture_values)), sharey=True)
     fig.suptitle('Mixture-Model | Epochs: 20000, Learning Rate: 1e-3, Dropout 0.3', fontsize=20)
+    x, y = sample_generators.generate_osband_sin_samples()
     for n_mixtures, ax in zip(mixture_values, axs):
         ax.set_title("%d Mixtures" % n_mixtures)
-        mixture_osband_sin_evaluation(0.3, 1e-3, n_mixtures=n_mixtures, epochs=15000, ax=ax)
-        fig.savefig("Mixture_Sinus.png")
+        mixture_evaluation(x, y, 0.3, 1e-3, n_mixtures=n_mixtures, epochs=15000, ax=ax)
+        fig.savefig("Mixture_Sinus.pdf")
 
     fig, axs = plt.subplots(len(mixture_values), 1, figsize=(30, 5*len(mixture_values)), sharey=True)
     fig.suptitle('Mixture-Model | Epochs: 20000, Learning Rate: 1e-3, Dropout 0.3', fontsize=20)
+    x, y = sample_generators.generate_osband_nonlinear_samples()
     for n_mixtures, ax in zip(mixture_values, axs):
         ax.set_title("%d Mixtures" % n_mixtures)
-        mixture_osband_nonlinear_evaluation(0.3, 1e-3, n_mixtures=n_mixtures, epochs=15000, ax=ax)
-        fig.savefig("Mixture_Nonlinear.png")
+        mixture_evaluation(x, y, 0.3, 1e-3, n_mixtures=n_mixtures, epochs=15000, ax=ax)
+        fig.savefig("Mixture_Nonlinear.pdf")
 
 
 
