@@ -16,11 +16,11 @@ def generate_osband_sin_samples(size=30, variance_1=0.03, variance_2=0.03):
     alpha = 4
     beta = 13
 
-    w1 = np.random.normal(0, variance_1, size=int(0.6*size))
-    x1 = np.linspace(0, 0.6, 0.6 * size)
+    w1 = np.random.normal(0, variance_1, size=int(0.75*size))
+    x1 = np.linspace(0, 0.6, 0.75 * size)
 
-    w2 = np.random.normal(0, variance_2, size=int(0.4*size))
-    x2 = np.linspace(0.8, 1.0, 0.4 * size)
+    w2 = np.random.normal(0, variance_2, size=int(0.25*size))
+    x2 = np.linspace(0.8, 1.0, 0.25 * size)
 
     x = np.append(x1, x2)
     w = np.append(w1, w2)
